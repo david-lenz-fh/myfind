@@ -1,15 +1,48 @@
+#include <dirent.h>
 #include <getopt.h>
+#include <linux/limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 void search_file(const char *searchpath, const char *filename, bool recursive,
                  bool caseSensitive) {
-  printf("%d: searching for %s in %s\n", getpid(), filename, searchpath);
-  fflush(stdout);
+  DIR *dir = opendir(searchpath);
+  if (!dir) {
+    perror("failed to open Dirrectory");
+    return;
+  }
+
+  struct dirent *dirrectoryentry;
+  while ((dirrectoryentry = readdir(dir)) != NULL) {
+    if (strcmp(dirrectoryentry->d_name, ".") == 0 ||
+        strcmp(dirrectoryentry->d_name, "..") == 0) {
+      continue;
+    }
+
+    int match;
+    if (caseSensitive) {
+      match = strcmp(dirrectoryentry->d_name, filename) == 0;
+    } else {
+      match = strcasecmp(dirrectoryentry->d_name, filename) == 0;
+    }
+
+    if (match) {
+      char fullpath[PATH_MAX];
+      snprintf(fullpath, sizeof(fullpath), "%s%s", searchpath,
+               dirrectoryentry->d_name);
+
+      printf("%d: %s: %s\n", getpid(), filename, fullpath);
+      fflush(stdout);
+    }
+  }
+
+  closedir(dir);
 }
 
 int main(int argc, char *argv[]) {
