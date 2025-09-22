@@ -14,31 +14,40 @@ void search_file(const char *searchpath, const char *filename, bool recursive,
                  bool caseSensitive) {
   DIR *dir = opendir(searchpath);
   if (!dir) {
-    perror("failed to open Dirrectory");
+    perror("failed to open Directory");
     return;
   }
 
-  struct dirent *dirrectoryentry;
-  while ((dirrectoryentry = readdir(dir)) != NULL) {
-    if (strcmp(dirrectoryentry->d_name, ".") == 0 ||
-        strcmp(dirrectoryentry->d_name, "..") == 0) {
+  struct dirent *directoryentry;
+  while ((directoryentry = readdir(dir)) != NULL) {
+    if (strcmp(directoryentry->d_name, ".") == 0 ||
+        strcmp(directoryentry->d_name, "..") == 0) {
       continue;
     }
 
     int match;
     if (caseSensitive) {
-      match = strcmp(dirrectoryentry->d_name, filename) == 0;
+      match = strcmp(directoryentry->d_name, filename) == 0;
     } else {
-      match = strcasecmp(dirrectoryentry->d_name, filename) == 0;
+      match = strcasecmp(directoryentry->d_name, filename) == 0;
     }
 
     if (match) {
       char fullpath[PATH_MAX];
-      snprintf(fullpath, sizeof(fullpath), "%s%s", searchpath,
-               dirrectoryentry->d_name);
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", searchpath,
+               directoryentry->d_name);
 
       printf("%d: %s: %s\n", getpid(), filename, fullpath);
       fflush(stdout);
+    }
+
+    if (!recursive)
+      continue;
+    if (directoryentry->d_type == DT_DIR) {
+      char newsearchpath[PATH_MAX];
+      snprintf(newsearchpath, sizeof(newsearchpath), "%s/%s", searchpath,
+               directoryentry->d_name);
+      search_file(newsearchpath, filename, recursive, caseSensitive);
     }
   }
 
@@ -56,11 +65,11 @@ int main(int argc, char *argv[]) {
     switch (c) {
     case 'R':
       searchRecursive = true;
-      printf("\nRekursiv");
+      printf("Rekursiv\n");
       break;
     case 'i':
       caseSensitive = false;
-      printf("\ncase insensitive");
+      printf("case insensitive\n");
       break;
     case '?':
       break;
