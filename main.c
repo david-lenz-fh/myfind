@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'i':
       caseSensitive = false;
-      printf("case insensitive\n");
+      printf("Case insensitive\n");
       break;
     case '?':
       break;
