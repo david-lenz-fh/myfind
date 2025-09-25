@@ -3,12 +3,12 @@ CFLAGS = -Wall -Wextra
 
 TARGET = myfind
 
-SRCS = main.c
-
 all: $(TARGET)
 
-$(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET)
+$(TARGET): main.o
+	$(CC) $(CFLAGS) main.o -o $(TARGET)
+main.o: main.c
 
+	$(CC) $(CFLAGS) -c main.c -o main.o
 clean: 
-	rm -f $(TARGET)
+	rm -f $(TARGET) main.o
